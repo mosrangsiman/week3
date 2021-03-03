@@ -53,7 +53,9 @@ typedef struct {
 } ADCStructure;
 
 ADCStructure ADCChannel[3] = { 0 };
-
+int ADCMode = 0;
+float ADCOutputConverted = 0;
+GPIO_PinState SwitchState[2];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -114,6 +116,24 @@ int main(void) {
 		/* USER CODE BEGIN 3 */
 
 		ADCPollingMethodUpdate();
+		SwitchState[0] = HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13);
+		//Press = Low , No = High
+		if (SwitchState[0] == GPIO_PIN_SET && SwitchState[1] == GPIO_PIN_RESET)
+		// set = high , reset = low
+				{
+			if (ADCMode == 0) {
+				ADCMode = 1;
+			} else {
+				ADCMode = 0;
+			}
+		}
+		SwitchState[1] = SwitchState[0];
+		if (ADCMode == 0) {
+			ADCOutputConverted = (3.3/4096.0)*ADCChannel[0].data*1000.0;
+		} else {
+			ADCOutputConverted = ((3.3/4096.0)*ADCChannel[2].data -0.76)/(2.5/1000.0)+25.0;
+		}
+
 	}
 	/* USER CODE END 3 */
 }
